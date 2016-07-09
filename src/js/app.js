@@ -76,40 +76,47 @@ class BoilerplateScene extends React.Component {
 
   render () {
     var that = this;
+    // layout shapes demo
     var currentLayoutOptions = that.getLayoutOptions();
+
+    // general internal
     var len = data.length;
     var datasq = Math.floor(Math.sqrt(len)); // 43 => 6
-    var arr = _.range(0, datasq+1); // [1, 2, 3, 4, 5]
-    var generateArrY = function(number, array) {
-      var arr = [];
-      for (var i = 0; i < number; i++) {
-        arr = arr.concat(array);
-      }
-      return arr;
-    };
-    var generateArrZ = function(number, array) {
-      var arr = [];
-      var len = array.length;
+    var dataRangeToSqrt = _.range(0, datasq+1); // [1, 2, 3, 4, 5]
 
-      for (var i = 0; i < number; i++) {
-          for(var j = 0; j < len; j++) {
-            arr.push(array[j]);
-          }
-      }
-      return arr;
+    // circles and cylinders
+    // need to provide an x and z value to position cylinder.
+    var circleIterator = datasq+1;
+    var circlePosition;
+    var changePosForCylinder = function(z) {   // change Y
+      circleIterator--;
+      var position = dataRangeToSqrt[circleIterator];
+      circlePosition = '0 ' + position + ' ' + z;
     };
-    var arrY = generateArrY(datasq, arr); // [1, 2, 3, 1, 2, 3, ...]
-    var arrZ = generateArrZ(datasq, arr); // [1, 1, 1, 2, 2, 2, 3, 3, 3]
-    var posY = arrY[len - 1]; // arr.length-1 => 4
-    var posZ = arrZ[len - 1];
-    var iterator = len - 1;
-    var pos = '';
 
-    var changePos = function() {
-      iterator--;
-      posY = arrY[iterator];
-      posZ = arrZ[iterator];
-      pos = '0 ' + posY + ' ' + posZ;
+    // stairs and mirrored stairs (X and tunnel)
+    // for stairs instead of sqrt to optimize size,
+    // we could as for an optional width and height
+    // and optimize size based on those if given.
+    var StairsIterator = datasq+1;
+    var StairsPos, mirroredStairsPos;
+    var changePosforStairs = function(mirror, cross) {
+      if (dataRangeToSqrt[StairsIterator-1]) {
+        StairsIterator--;
+      } else {
+        StairsIterator = datasq + 1;
+        // if we have several separate entities calling this function
+        // we need to reset iteration between renders.
+      }
+      var position = dataRangeToSqrt[StairsIterator];
+      StairsPos = '0 ' + position + ' ' + position;
+      if (mirror && !cross) { // dataRangeMax - position + transform
+        var positionMirrorZ = (datasq+1) - dataRangeToSqrt[StairsIterator] + Math.round(datasq / 2) + 2; // must be a cleaner way...
+        mirroredStairsPos = '0 ' + position + ' ' + positionMirrorZ;
+      } else if (mirror && cross) {
+        var positionMirrorZ = (datasq+1) - dataRangeToSqrt[StairsIterator];
+        mirroredStairsPos = '0 ' + position + ' ' + positionMirrorZ;
+      }
     };
 
     return (
@@ -131,9 +138,32 @@ class BoilerplateScene extends React.Component {
         <Entity light={{type: 'directional', intensity: 0.5}} position={[-1, 1, 0]}/>
         <Entity light={{type: 'directional', intensity: 1}} position={[1, 1, 0]}/>
 
+
+
+        {/* cylinder as stacked circles */}
+
+        {dataRangeToSqrt.map(function(i) {
+          changePosForCylinder(15);
+          return <Entity layout={{type: 'circle', radius: `${datasq}`}} position={circlePosition}>
+
+            {data.slice(0, 5).map(function(person) {
+              return <Entity key={person.id} data={person}
+                      geometry="primitive: box"
+                      material={{src: `url(${person.image})`, color: that.state.color}}
+                      onClick={that.changeColor}
+                      >
+                </Entity>;
+            })}
+
+          </Entity>
+        })}
+
+        {/*another one*/}
+
+        {/* controller entity for layout test container */}
         <Entity onClick={that.changeLayout} geometry="primitive: cylinder" material="color: red" position="1 0 -5"> </Entity>
 
-       {/* our container entity component */}
+       {/* Layout tests container entity component */}
         <Entity
           layout={{type: `${that.state.layout}`,
             margin: `${currentLayoutOptions.margin}`,
@@ -153,32 +183,15 @@ class BoilerplateScene extends React.Component {
             <Animation attribute="rotation" dur="5000" repeat="indefinite" to="0 360 360"/>
           </Entity>;
         })}
-
-        {/*<Animation attribute="rotation" dur="5000" repeat="indefinite" to="0 360 360"/> {/* somehow animate the entire circle of ( animated...) boxes */}*/}
+        {/*<Animation attribute="rotation" dur="5000" repeat="indefinite" to="0 360 360"/>*/}
         </Entity>
 
-        {/* another entity layout container */}
-        {/*
-          the way to make a cube of n * n is to change:
-          - the slice of the dataset
-            for an n*n cube - slice n
-              so while x < n, x = 0, y = x + n || undefined
-              TODO: one floor, one round to account for all boxes.
-
-              1 2 3 1 2 3 1 2 3 Y
-              1 1 1 2 2 2 3 3 3 Z
-
-          - the positioning of the entities (along Y and Z axes)
-          -- no need to change the X axis as the layout module maps against X
-
-          // TODO: slice dynamic
-        */}
-
-        { arr.map(function(i) {
-          changePos();
+        {/* Stairs layout container */}
+        {/*{ dataRangeToSqrt.map(function(i) {
+          changePosforStairs();
 
            return <Entity key={i} layout="type: line, margin: 1.5"
-                  position={pos}>
+                  position={StairsPos}>
 
             {data.slice(0, 5).map(function(person) {
               return <Entity key={person.id} data={person}
@@ -196,7 +209,46 @@ class BoilerplateScene extends React.Component {
 
           </Entity>
           })
-        }
+        }*/}
+
+        {/* tunnel as two mirrored stairs */}
+          {/*{ dataRangeToSqrt.map(function(i) {
+            changePosforStairs();
+
+             return <Entity key={i} layout="type: line, margin: 1.5"
+                    position={StairsPos}>
+
+              {data.slice(0, 5).map(function(person) {
+                return <Entity key={person.id} data={person}
+                        geometry="primitive: box"
+                        material={{src: `url(${person.image})`, color: that.state.color}}
+                        onClick={that.changeColor}
+                        >
+                  </Entity>;
+              })}
+
+            </Entity>
+            })
+          }
+
+          { dataRangeToSqrt.map(function(i) {
+            changePosforStairs(true, false);
+
+             return <Entity key={i} layout="type: line, margin: 1.5"
+                    position={mirroredStairsPos}>
+
+              {data.slice(0, 5).map(function(person) {
+                return <Entity key={person.id} data={person}
+                        geometry="primitive: box"
+                        material={{src: `url(${person.image})`, color: that.state.color}}
+                        onClick={that.changeColor}
+                        >
+                  </Entity>;
+              })}
+
+            </Entity>
+            })
+          }*/}
 
       </Scene>
     ); // render ()
