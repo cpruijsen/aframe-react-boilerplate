@@ -1,3 +1,16 @@
+// TODO: experiment with rotation (roll, pitch, yaw)
+// TODO: experiment with relative rotation: https://aframe.io/docs/0.2.0/components/rotation.html
+// could some of the below be more easily achieved using relative rotation?
+
+// pyramid - rotated stacked boxes of varying size
+// cube - adjacent boxes of equal size
+// cylinder - stacked equal size circles
+//
+
+// scatterplot?
+// bar chart --> adjacent boxes w 1 column // rotated lines && varying size?
+//  
+
 // === DYNAMIC RENDERING === //
 /*
 Position input is a String "x y z"
