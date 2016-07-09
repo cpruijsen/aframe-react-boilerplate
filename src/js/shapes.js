@@ -16,6 +16,18 @@ Both the layout and the primitives can have separate transforms
 // 2. different Y, different radius: pyramid / star
 // 3. different Y, same radius: regular stacked circle cylinder
 
+var circleIterator = datasq+1;
+var circlePosition;
+var changePosForCylinder = function(z) {   // change Y
+  circleIterator--;
+  var position = dataRangeToSqrt[circleIterator];
+  circlePosition = '0 ' + position + ' ' + z;
+};
+
+// 1. Y is set to {datasq}, radius to {position}
+// 2. as above, but radius is also set to {position}
+// 3. as above with fixed radius as {datasq}
+
 // STAIRS
 //=> 0 1 1 || 0 2 2 || 0 3 3 ...
 
@@ -36,18 +48,10 @@ var changePos = function() {
           position={pos}>
     {data.slice(0, 5).map(function(person) {
       return <Entity key={person.id} data={person}
-              geometry="primitive: box">
-        </Entity>;
-    })}
-  </Entity>
-  })}
+              geometry="primitive: box"> </Entity>; })}
+  </Entity> })}
 
 // tunnel
-// ## one way to do this: stairs + a transformed stairs (mirrored)
-
-var len = data.length;
-var datasq = Math.floor(Math.sqrt(len)); // 43 => 6
-
 // stairs and mirrored stairs (X and tunnel)
 // for stairs instead of sqrt to optimize size,
 // we could as for an optional width and height
@@ -73,24 +77,35 @@ var changePosforStairs = function(mirror, cross) {
     mirroredStairsPos = '0 ' + position + ' ' + positionMirrorZ;
   }
 };
-// original stairs as above, mirror as below.
-{ dataRangeToSqrt.map(function(i) {
-  changePosforStairs(true, false);
-   return <Entity key={i} layout="type: line, margin: 1.5"
-          position={mirroredStairsPos}>
-    {data.slice(0, 5).map(function(person) {
-      return <Entity key={person.id} data={person}
-              geometry="primitive: box">
-        </Entity>;
-    })}
-  </Entity>
-  })}
+// original stairs as above, mirror calls `changePosforStairs(true, false);`
 
 
 // pyramid
 
 
 // cube
+// adjacent box layouts
+// note: need large dataset to render proper 3D cubes.
+// to make cube proper n*n*n you have to Math.floor
+// and render on the nearest number that has a non-floating point cube root.
+var datacb = Math.floor(Math.cbrt(len));
+var dataRangeToCbrt = _.range(0, datacb);
+var cubeslice = datacb * datacb;
+var CubeIterator = datacb;
+var CubePosition;
+var changePosForCube = function() {
+  CubeIterator--;
+  var position = dataRangeToCbrt[CubeIterator];
+  CubePosition = '0 0 ' + position;
+};
 
+{dataRangeToCbrt.map(function(i) {
+  changePosForCube();
+  return <Entity layout={{type: 'box', margin: '2', columns: `${datacb}`}} position={CubePosition}>
+    {data.slice(0, cubeslice).map(function(person) {
+      return <Entity key={person.id} data={person}
+              geometry="primitive: box"> </Entity> })}
+  </Entity>
+})}
 
-// Conway
+// Conway's Game of Life

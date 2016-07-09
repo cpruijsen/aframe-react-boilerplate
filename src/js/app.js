@@ -82,15 +82,29 @@ class BoilerplateScene extends React.Component {
     // general internal
     var len = data.length;
     var datasq = Math.floor(Math.sqrt(len)); // 43 => 6
+    var datacb = Math.floor(Math.cbrt(len));
     var dataRangeToSqrt = _.range(0, datasq+1); // [1, 2, 3, 4, 5]
+    var dataRangeToCbrt = _.range(0, datacb);
+
+    // pyramids 
+
+    // cubes
+    var cubeslice = datacb * datacb;
+    var CubeIterator = datacb;
+    var CubePosition;
+    var changePosForCube = function() {
+      CubeIterator--;
+      var position = dataRangeToCbrt[CubeIterator];
+      CubePosition = '0 0 ' + position;
+    };
 
     // circles and cylinders
     // need to provide an x and z value to position cylinder.
-    var circleIterator = datasq+1;
+    var circleIterator = datacb;
     var circlePosition;
     var changePosForCylinder = function(z) {   // change Y
       circleIterator--;
-      var position = dataRangeToSqrt[circleIterator];
+      var position = dataRangeToCbrt[circleIterator];
       circlePosition = '0 ' + position + ' ' + z;
     };
 
@@ -138,27 +152,8 @@ class BoilerplateScene extends React.Component {
         <Entity light={{type: 'directional', intensity: 0.5}} position={[-1, 1, 0]}/>
         <Entity light={{type: 'directional', intensity: 1}} position={[1, 1, 0]}/>
 
-
-
-        {/* cylinder as stacked circles */}
-
-        {dataRangeToSqrt.map(function(i) {
-          changePosForCylinder(15);
-          return <Entity layout={{type: 'circle', radius: `${datasq}`}} position={circlePosition}>
-
-            {data.slice(0, 5).map(function(person) {
-              return <Entity key={person.id} data={person}
-                      geometry="primitive: box"
-                      material={{src: `url(${person.image})`, color: that.state.color}}
-                      onClick={that.changeColor}
-                      >
-                </Entity>;
-            })}
-
-          </Entity>
-        })}
-
         {/*another one*/}
+
 
         {/* controller entity for layout test container */}
         <Entity onClick={that.changeLayout} geometry="primitive: cylinder" material="color: red" position="1 0 -5"> </Entity>
@@ -249,6 +244,39 @@ class BoilerplateScene extends React.Component {
             </Entity>
             })
           }*/}
+
+          {/* cylinder as stacked circles */}
+          {/*{dataRangeToSqrt.map(function(i) {
+            changePosForCylinder(15);
+            return <Entity layout={{type: 'circle', radius: `${datasq}`}} position={circlePosition}>
+
+              {data.slice(0, 5).map(function(person) {
+                return <Entity key={person.id} data={person}
+                        geometry="primitive: box"
+                        material={{src: `url(${person.image})`, color: that.state.color}}
+                        onClick={that.changeColor}
+                        >
+                  </Entity>;
+              })}
+
+            </Entity>
+          })}*/}
+
+          {/* cube as adjacent boxes */}
+          {/*{dataRangeToCbrt.map(function(i) {
+            changePosForCube();
+            return <Entity layout={{type: 'box', margin: '1', columns: `${datacb}`}} position={CubePosition}>
+
+              {data.slice(0, cubeslice).map(function(person) {
+                return <Entity key={person.id} data={person}
+                        geometry="primitive: box"
+                        material={{src: `url(${person.image})`, color: that.state.color}}
+                        onClick={that.changeColor}
+                        >
+                  </Entity>;
+              })}
+            </Entity>
+          })}*/}
 
       </Scene>
     ); // render ()
