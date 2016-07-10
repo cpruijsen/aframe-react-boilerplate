@@ -1,6 +1,9 @@
 // TODO: experiment with rotation (roll, pitch, yaw)
-// TODO: experiment with relative rotation: https://aframe.io/docs/0.2.0/components/rotation.html
+// TODO: experiment with relative rotation:
+//  https://aframe.io/docs/0.2.0/components/rotation.html
 // could some of the below be more easily achieved using relative rotation?
+
+// TODO: experiment w opacity https://aframe.io/aframe/examples/test-opacity/
 
 // pyramid - rotated stacked boxes of varying size
 // cube - adjacent boxes of equal size
@@ -9,7 +12,7 @@
 
 // scatterplot?
 // bar chart --> adjacent boxes w 1 column // rotated lines && varying size?
-//  
+//
 
 // === DYNAMIC RENDERING === //
 /*
@@ -36,6 +39,23 @@ var changePosForCylinder = function(z) {   // change Y
   var position = dataRangeToSqrt[circleIterator];
   circlePosition = '0 ' + position + ' ' + z;
 };
+
+{dataRangeToCbrt.map(function(i) {
+  changePosForCylinder(15);
+
+  return <Entity layout={{type: 'circle', radius: `${datacb}`}} position={circlePosition}>
+
+  {/* additional animation on layout */}
+  <Animation attribute="layout.radius" repeat="indefinite" to={`${datasq}`} direction="alternate" begin="2000"/>
+
+    {data.slice(0, 15).map(function(person) {
+      return <Entity key={person.id} data={person}
+              geometry="primitive: box"
+              material={{src: `url(${person.image})`, color: that.state.color}}
+              onClick={that.changeColor} >
+      </Entity>; })}
+
+  </Entity> })}
 
 // 1. Y is set to {datasq}, radius to {position}
 // 2. as above, but radius is also set to {position}

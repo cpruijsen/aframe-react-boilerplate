@@ -1,5 +1,9 @@
 import {Animation, Entity} from 'aframe-react';
 import React from 'react';
+import 'aframe-extras';
+var extras = require('aframe-extras');
+extras.registerAll();
+
 
 export default props => {
   const geometry = {

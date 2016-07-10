@@ -37,6 +37,8 @@
   },
   "homepage": "https://github.com/ngokevin/aframe-react-boilerplate#readme",
   "devDependencies": {
+    "aframe-extras": "^2.1.0",
+    "aframe-text-component": "^0.3.0",
     "babel": "^6.3.13",
     "babel-core": "^6.3.15",
     "babel-loader": "^6.2.0",

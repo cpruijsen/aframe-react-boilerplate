@@ -1,6 +1,10 @@
 import 'aframe';
 import 'aframe-layout-component';
 import 'babel-polyfill';
+import 'aframe-text-component';
+import 'aframe-extras';
+var extras = require('aframe-extras');
+extras.registerAll();
 import _ from 'underscore';
 import {Animation, Entity, Scene} from 'aframe-react';
 import React from 'react';
@@ -16,15 +20,16 @@ class BoilerplateScene extends React.Component {
     super(props);
     this.state = {
       color: 'yellow',
-      layout: 'circle'
+      layout: 'circle',
+      infoBoxVisible: false
     }
   }
 
   changeColor = () => {
-    const colors = ['orange', 'yellow', 'green', 'blue']; 
+    const colors = ['orange', 'yellow', 'green', 'blue'];
     this.setState({
       color: colors[Math.floor(Math.random() * colors.length)],
-    }); 
+    });
   };
 
   changeLayout = () => {
@@ -32,6 +37,11 @@ class BoilerplateScene extends React.Component {
     this.setState({
       layout: layoutTypes[Math.floor(Math.random() * layoutTypes.length)],
     });
+  };
+
+  changeInfoBoxVisible = () => { // toggles infoBoxVisible
+    this.setState({'infoBoxVisible': !this.state.infoBoxVisible});
+    // TODO move this to the model / for each box.
   };
 
   getLayoutOptions = () => {
@@ -98,24 +108,14 @@ class BoilerplateScene extends React.Component {
     // rendering for cylinders can be cleaned up.
 
     return (
-      <Scene>
-        {/* TODO:
-         add onEnterVR, noExitVR, onLoaded -- in props :: functions.
-         on load show 2D space
-         on click of new button - enter VR
-         on enterVR start initial 3d render
-         on button or keypress Esc exitVR
-         on exitVR go back to 2D representation
-         >> use D3 for 2D representation ?
-        */}
+      <Scene physics="debug: true">
         <Camera><Cursor/></Camera>
-
         <Sky/>
 
         <Entity light={{type: 'ambient', color: '#888'}}/>
         <Entity light={{type: 'directional', intensity: 0.5}} position={[-1, 1, 0]}/>
         <Entity light={{type: 'directional', intensity: 1}} position={[1, 1, 0]}/>
-
+        <Entity geometry="grid" static-body/>
 
           {/* cylinder as stacked circles */}
           {/*
@@ -130,17 +130,29 @@ class BoilerplateScene extends React.Component {
               email: email
               linkedin: linkedin
           */}
+
           {dataRangeToCbrt.map(function(i) {
-            changePosForCylinder(15);
+            changePosForCylinder(10);
 
             return <Entity layout={{type: 'circle', radius: `${datacb}`}} position={circlePosition}>
+            <Animation attribute="layout.radius" repeat="indefinite" to={`${datasq}`} direction="alternate" begin="2000"/>
 
               {data.slice(0, 15).map(function(person) {
                 return <Entity key={person.id} data={person}
                         geometry="primitive: box"
                         material={{src: `url(${person.image})`, color: that.state.color}}
-                        onClick={that.changeColor} >
+                        onClick={that.changeInfoBoxVisible}
+                        //onClick={that.changeColor}
+                        >
+                        <Entity text={`text:  ${person.name}`}
+                                material="color: #66E1B4"
+                                scale="0.3 0.3 0.3"
+                                position="0 .5 -1"
+                                rotation="0 180 0"
+                                visible={that.state.infoBoxVisible} />
+
                 </Entity>; })}
+
             </Entity> })}
 
         {/*another one*/}
