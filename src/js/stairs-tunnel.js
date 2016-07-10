@@ -1,3 +1,5 @@
+// NOTE: can do this more easily with rotation="0 0 180" ?? try out rotation.
+
 // stairs and mirrored stairs (X and tunnel)
 // for stairs instead of sqrt to optimize size,
 // we could as for an optional width and height

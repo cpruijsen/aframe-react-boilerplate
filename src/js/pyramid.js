@@ -11,6 +11,7 @@ var numBoxesUsedInPyramid,
     leftOverBoxes,
     pyramidCurrentN,
     pyramidPosition,
+    pyramidMirroredPosition,
     pyramidSliceStart,
     pyramidSliceEnd,
     pyramidIterator = 0; // boxes to use in Pyramid
@@ -36,10 +37,17 @@ sliceArr = sliceArr.reverse();
 var pyramidPositionX = -10;
 var pyramidPositionY = 1;
 var pyramidPositionZ = -20;
+var pyramidMirroredPositionX = -10;
+var pyramidMirroredPositionY = 0; // or 0 for overlap
+var pyramidMirroredPositionZ = -20;
 
 // NOTE: could pass 'leftOverBoxes' into a separate thread of calculatePyramid and render a mini-pyramid next to the main pyramid etc...
 
 var determineNforPyramid = function() {
+  if (!sliceArr[pyramidIterator]) {
+    pyramidIterator = 0; // reset on mirrored pyramid creation.
+  }
+
   pyramidSliceStart = numBoxesUsedInPyramid - sliceArr[pyramidIterator];
   if (sliceArr[pyramidIterator+1]) {
     pyramidSliceEnd = numBoxesUsedInPyramid - sliceArr[pyramidIterator+1];
@@ -50,11 +58,17 @@ var determineNforPyramid = function() {
   pyramidCurrentN = Math.sqrt(pyramidSliceEnd - pyramidSliceStart);
 };
 
-var changePositionForPyramid = function() {
-  pyramidPositionX +=1;
-  pyramidPositionY +=1;
+var changePositionForPyramid = function(options) {
+  options = options || {};
+  if (options.mirrored) { // X and Z could go +1 instead ?
+    pyramidMirroredPositionX +=1;
+    pyramidMirroredPositionY -=1;
+    pyramidMirroredPositionZ +=1;
+    pyramidMirroredPosition = `${pyramidMirroredPositionX} ${pyramidMirroredPositionY} ${pyramidMirroredPositionZ}`
+  }
+  pyramidPositionX +=1; // on second iteration (mirrored) this shouldn't affect
+  pyramidPositionY +=1; // rendering of the first pyramid.
   pyramidPositionZ +=1;
-
   pyramidPosition = `${pyramidPositionX} ${pyramidPositionY} ${pyramidPositionZ}`
 };
 
@@ -63,6 +77,22 @@ var changePositionForPyramid = function() {
   determineNforPyramid();
   changePositionForPyramid();
     return <Entity layout={{type: 'box', margin: '2', columns: `${pyramidCurrentN}`}} position={pyramidPosition} rotation="90 0 0">
+
+    {data.slice(pyramidSliceStart, pyramidSliceEnd).map(function(person) {
+      return <Entity key={person.id}
+        geometry="primitive: box"
+        material={{src: `url(${person.image})`, color: that.state.color}}
+        onClick={that.changeColor} >
+      </Entity>
+    })}
+  </Entity>
+})}
+
+{/*// === MIRRORED PYRAMID === //*/}
+{sliceArr.map(function(i) {
+  determineNforPyramid();
+  changePositionForPyramid({mirrored: true});
+    return <Entity layout={{type: 'box', margin: '2', columns: `${pyramidCurrentN}`}} position={pyramidMirroredPosition} rotation="90 0 0">
 
     {data.slice(pyramidSliceStart, pyramidSliceEnd).map(function(person) {
       return <Entity key={person.id}
